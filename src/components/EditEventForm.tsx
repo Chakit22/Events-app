@@ -1,4 +1,5 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { type Event } from "../types/Event";
 
 interface EventFormInputs {
   title: string;
@@ -8,7 +9,12 @@ interface EventFormInputs {
   date: string;
 }
 
-export const EventForm = () => {
+interface EditEventProps {
+  event: Event | undefined;
+  onEdit: (id: number | undefined, data: Omit<Event, "id">) => void;
+}
+
+export const EditEventForm = ({ event, onEdit }: EditEventProps) => {
   const {
     register,
     handleSubmit,
@@ -17,12 +23,8 @@ export const EventForm = () => {
     reset,
   } = useForm<EventFormInputs>();
 
-  const createEvent = (data: EventFormInputs) => {
-    console.log("Event created : ", data);
-    reset();
-  };
-
-  const onSubmit: SubmitHandler<EventFormInputs> = (data) => createEvent(data);
+  const onSubmit: SubmitHandler<EventFormInputs> = (data) =>
+    onEdit(event?.id, data);
 
   return (
     <div className="min-w-md flex flex-col justify-center items-center gap-4 border-solid border-4 p-8">
@@ -33,21 +35,21 @@ export const EventForm = () => {
       >
         <input
           className="border-solid border-2 p-2"
-          placeholder="Event Title"
+          defaultValue={event?.title}
           {...register("title", { required: true })}
         />
         {errors.title && <span>Event Title is required</span>}
 
         <input
           className="border-solid border-2 p-2"
-          placeholder="Event Description"
+          defaultValue={event?.description}
           {...register("description", { required: true })}
         />
         {errors.description && <span>Event description is required</span>}
 
         <input
           className="border-solid border-2 p-2"
-          placeholder="YYYY-MM-DD"
+          defaultValue={event?.date}
           {...register("date", {
             required: true,
             pattern: {
@@ -60,7 +62,7 @@ export const EventForm = () => {
 
         <input
           className="border-solid border-2 p-2"
-          placeholder="HH:MM"
+          defaultValue={event?.time}
           {...register("time", {
             required: true,
             pattern: {
@@ -73,7 +75,7 @@ export const EventForm = () => {
 
         <input
           className="border-solid border-2 p-2"
-          placeholder="Location"
+          defaultValue={event?.location}
           {...register("location", { required: true })}
         />
         {errors.location && <span>Event location is required</span>}
