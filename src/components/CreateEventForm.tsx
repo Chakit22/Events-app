@@ -1,14 +1,13 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { type Event } from "../types/Event";
 
-interface EventFormInputs {
-  title: string;
-  description: string;
-  location: string;
-  time: string;
-  date: string;
+type EventFormInputs = Omit<Event, "id">;
+
+interface CreateEventProps {
+  onCreate: (event: Omit<Event, "id">) => void;
 }
 
-export const CreateEventForm = () => {
+export const CreateEventForm = ({ onCreate }: CreateEventProps) => {
   const {
     register,
     handleSubmit,
@@ -17,12 +16,7 @@ export const CreateEventForm = () => {
     reset,
   } = useForm<EventFormInputs>();
 
-  const createEvent = (data: EventFormInputs) => {
-    console.log("Event created : ", data);
-    reset();
-  };
-
-  const onSubmit: SubmitHandler<EventFormInputs> = (data) => createEvent(data);
+  const onSubmit: SubmitHandler<EventFormInputs> = (data) => onCreate(data);
 
   return (
     <div className="min-w-md flex flex-col justify-center items-center gap-4 border-solid border-4 p-8">

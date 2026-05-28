@@ -11,7 +11,7 @@ interface EventFormInputs {
 
 interface EditEventProps {
   event: Event | undefined;
-  onEdit: (id: number | undefined, data: Omit<Event, "id">) => void;
+  onEdit: (id: string | undefined, data: Omit<Event, "id">) => void;
 }
 
 export const EditEventForm = ({ event, onEdit }: EditEventProps) => {

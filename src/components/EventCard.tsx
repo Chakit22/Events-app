@@ -4,8 +4,8 @@ import { Trash } from "lucide-react";
 
 interface EventCardProps {
   event: Event;
-  onDelete: (id: number) => void;
-  onEdit: (id: number) => void;
+  onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
 export const EventCard = ({ event, onDelete, onEdit }: EventCardProps) => {
