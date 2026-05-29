@@ -14,6 +14,11 @@ interface EditEventProps {
   onEdit: (id: string | undefined, data: Omit<Event, "id">) => void;
 }
 
+// MISTAKE I MADE: wrote `(event: Event | undefined)` as the parameter, treating
+// the first arg as the event itself. React passes ONE props OBJECT to every
+// component, so that made the whole props bag get typed as Event — and the
+// parent's `event={...}` had nowhere to bind ("Property 'event' does not exist").
+// CONCEPT — destructure named props out of the single props object: ({ event, onEdit }).
 export const EditEventForm = ({ event, onEdit }: EditEventProps) => {
   const {
     register,
