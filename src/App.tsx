@@ -9,7 +9,7 @@ import { useRSVP } from "./hooks/useRSVP";
 import { useUser } from "./hooks/useUser";
 
 function App() {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const { events, createEvent, editEvent, deleteEvent } = useEvents();
   const { userEvents, updateRSVP, removeRSVPsForEvent, attendance } =
     useRSVP(events);
@@ -94,25 +94,44 @@ function App() {
           <div className="flex flex-col justify-center items-center">
             <h1>Events</h1>
             <div className="grid gap-4 grid-cols-3 p-24">
-              {filteredEvents.map((event) => {
-                const rsvpStatus = userEvents.find(
-                  (ue) => ue.userId === user.id && ue.eventId === event.id,
-                )?.status;
-                console.log(rsvpStatus);
-                return (
-                  <EventCard
-                    key={event.id}
-                    currentRole={currentRole}
-                    event={event}
-                    onEdit={setIsEditingId}
-                    onEditRSVPStatus={updateRSVP}
-                    onDelete={handleDeleteEvent}
-                    rsvpStatus={rsvpStatus}
-                    cntAttending={attendance[event.id]?.attending}
-                    cntNotAttending={attendance[event.id]?.not_attending}
-                  />
-                );
-              })}
+              {currentRole === "user" &&
+                filteredEvents.map((event) => {
+                  const rsvpStatus = userEvents.find(
+                    (ue) => ue.userId === user.id && ue.eventId === event.id,
+                  )?.status;
+                  return (
+                    <EventCard
+                      key={event.id}
+                      currentRole={currentRole}
+                      event={event}
+                      onEdit={setIsEditingId}
+                      onEditRSVPStatus={updateRSVP}
+                      onDelete={handleDeleteEvent}
+                      rsvpStatus={rsvpStatus}
+                      cntAttending={attendance[event.id]?.attending}
+                      cntNotAttending={attendance[event.id]?.not_attending}
+                    />
+                  );
+                })}
+              {currentRole === "admin" &&
+                events.map((event) => {
+                  const rsvpStatus = userEvents.find(
+                    (ue) => ue.userId === user.id && ue.eventId === event.id,
+                  )?.status;
+                  return (
+                    <EventCard
+                      key={event.id}
+                      currentRole={currentRole}
+                      event={event}
+                      onEdit={setIsEditingId}
+                      onEditRSVPStatus={updateRSVP}
+                      onDelete={handleDeleteEvent}
+                      rsvpStatus={rsvpStatus}
+                      cntAttending={attendance[event.id]?.attending}
+                      cntNotAttending={attendance[event.id]?.not_attending}
+                    />
+                  );
+                })}
             </div>
           </div>
         )}

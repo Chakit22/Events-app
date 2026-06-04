@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { User } from "../types/User";
 
 export const useUser = () => {
@@ -10,14 +11,14 @@ export const useUser = () => {
           name: "Alice Johnson",
           phone: 5550101,
           email: "alice.johnson@example.com",
-          role: "admin",
+          role: "user",
         },
         {
           id: crypto.randomUUID(),
           name: "Bob Smith",
           phone: 5550102,
           email: "bob.smith@example.com",
-          role: "user",
+          role: "admin",
         },
         {
           id: crypto.randomUUID(),
@@ -43,6 +44,10 @@ export const useUser = () => {
       ]),
     );
   }
-  const user = JSON.parse(localStorage.getItem("users")!)[0];
-  return { user };
+
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("users")!)[0],
+  );
+
+  return { user, setUser };
 };
