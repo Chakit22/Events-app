@@ -23,9 +23,7 @@ export const EditEventForm = ({ event, onEdit }: EditEventProps) => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-    reset,
   } = useForm<EventFormInputs>();
 
   const onSubmit: SubmitHandler<EventFormInputs> = (data) =>
