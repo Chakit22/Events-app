@@ -9,7 +9,7 @@ import { useRSVP } from "./hooks/useRSVP";
 import { useUser } from "./hooks/useUser";
 
 function App() {
-  const { user, setUser } = useUser();
+  const { user } = useUser();
   const { events, createEvent, editEvent, deleteEvent } = useEvents();
   const { userEvents, updateRSVP, removeRSVPsForEvent, attendance } =
     useRSVP(events);

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { User } from "../types/User";
 
 export const useUser = () => {
   if (!localStorage.getItem("users")) {
