@@ -575,9 +575,9 @@ project and which rules/options to use.
   "compilerOptions": {
     "target": "ES2023",
     "module": "ESNext",
-    "strict": true
+    "strict": true,
   },
-  "include": ["src"]
+  "include": ["src"],
 }
 ```
 
@@ -588,7 +588,7 @@ These decide which source files are part of the TypeScript program.
 ```jsonc
 {
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["src/**/*.test.ts", "node_modules"]
+  "exclude": ["src/**/*.test.ts", "node_modules"],
 }
 ```
 
@@ -608,8 +608,8 @@ Modern targets keep modern syntax; older targets downlevel some syntax.
 ```jsonc
 {
   "compilerOptions": {
-    "target": "ES5"
-  }
+    "target": "ES5",
+  },
 }
 ```
 
@@ -643,8 +643,8 @@ by the bundler/runtime.
 ```jsonc
 {
   "compilerOptions": {
-    "module": "CommonJS"
-  }
+    "module": "CommonJS",
+  },
 }
 ```
 
@@ -668,8 +668,8 @@ folder used to preserve output structure.
 {
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
-  }
+    "outDir": "dist",
+  },
 }
 ```
 
@@ -688,8 +688,8 @@ This is common when a tool like Vite, Next.js, or esbuild handles bundling.
 ```jsonc
 {
   "compilerOptions": {
-    "noEmit": true
-  }
+    "noEmit": true,
+  },
 }
 ```
 
@@ -701,8 +701,8 @@ because consumers get types without needing the original TypeScript source.
 ```jsonc
 {
   "compilerOptions": {
-    "declaration": true
-  }
+    "declaration": true,
+  },
 }
 ```
 
@@ -719,8 +719,8 @@ original TypeScript instead of only showing generated JavaScript.
 ```jsonc
 {
   "compilerOptions": {
-    "sourceMap": true
-  }
+    "sourceMap": true,
+  },
 }
 ```
 
@@ -738,8 +738,8 @@ TypeScript to type-check those JavaScript files too.
 {
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": true
-  }
+    "checkJs": true,
+  },
 }
 ```
 
@@ -755,8 +755,8 @@ age = "twenty"; // TypeScript can report this with checkJs enabled.
 ```jsonc
 {
   "compilerOptions": {
-    "strict": true
-  }
+    "strict": true,
+  },
 }
 ```
 
@@ -777,9 +777,9 @@ These options create cleaner import aliases for TypeScript.
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@components/*": ["src/components/*"]
-    }
-  }
+      "@components/*": ["src/components/*"],
+    },
+  },
 }
 ```
 
@@ -1091,3 +1091,5 @@ Development source maps are useful.
 Public production source maps should be intentional.
 For private/proprietary code, upload source maps privately to an error tool instead of publishing them publicly.
 ```
+
+Reference: https://medium.com/jspoint/typescript-compilation-the-typescript-compiler-4cb15f7244bc
