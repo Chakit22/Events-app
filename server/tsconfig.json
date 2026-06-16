@@ -2,22 +2,29 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
+    // Treat src as the source root so emitted paths are based from that folder.
     "rootDir": "./src",
+    // Write compiled JavaScript and declaration files into dist.
     "outDir": "./dist",
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
+    // Use Node's ESM/CommonJS-aware module rules.
     "module": "nodenext",
+    // Keep modern JS syntax for the current Node runtime.
     "target": "esnext",
+    // Include Node's global/module type definitions.
     "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
-    // "types": ["node"],
     // and npm install -D @types/node
 
     // Other Outputs
+    // Let debuggers map emitted JavaScript back to the original TypeScript.
     "sourceMap": true,
+    // Generate .d.ts files so other code can consume this package's types.
     "declaration": true,
+    // Map generated .d.ts files back to their TypeScript sources.
     "declarationMap": true,
 
     // Stricter Typechecking Options
@@ -33,6 +40,7 @@
     // "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
+    // Enable the strongest common type-checking rules.
     "strict": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,

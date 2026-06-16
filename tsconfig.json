@@ -1,5 +1,9 @@
 {
+  // This root config is a project-reference hub. The actual compiler options
+  // live in tsconfig.app.json and tsconfig.node.json.
   "files": [],
+  // Project references let `tsc --build` type-check the app config and the
+  // Node/Vite config as separate TypeScript projects.
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }

@@ -1,0 +1,18 @@
+{
+  "name": "dts-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "check": "tsc --project consumer/tsconfig.json",
+    "check:loose": "tsc --project consumer/tsconfig.json --strict false",
+    "runtime:bad": "node -e 'const { greet } = require(\"./my-lib\"); console.log(greet(123));'"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.24",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "lodash": "^4.18.1"
+  }
+}

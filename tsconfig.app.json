@@ -1,25 +1,39 @@
 {
   "compilerOptions": {
+    // Stores incremental build metadata outside the source tree.
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    // Output/check against modern JavaScript. TypeScript does not add polyfills.
     "target": "es2023",
+    // Available runtime/browser APIs for type-checking.
     "lib": ["ES2023", "DOM"],
+    // Keep native import/export syntax for Vite's bundler.
     "module": "esnext",
+    // Include Vite's client-side environment types.
     "types": ["vite/client"],
+    // Skip checking library declaration files for faster local builds.
     "skipLibCheck": true,
 
     /* Bundler mode */
+    // Match how Vite resolves imports in browser code.
     "moduleResolution": "bundler",
+    // Allow imports that explicitly end in .ts/.tsx when no JS is emitted.
     "allowImportingTsExtensions": true,
+    // Preserve import/export syntax exactly for the bundler.
     "verbatimModuleSyntax": true,
+    // Treat every file as a module so global script behavior does not leak in.
     "moduleDetection": "force",
+    // Type-check only; Vite emits the browser bundle.
     "noEmit": true,
+    // Use the modern React JSX transform.
     "jsx": "react-jsx",
 
     /* Linting */
+    // Report unused code and common control-flow mistakes during type-checking.
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
+  // Only source files in src are part of this app TypeScript project.
   "include": ["src"]
 }
