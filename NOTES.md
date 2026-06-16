@@ -36,6 +36,127 @@ const filteredEvents = filter === "all"
 If a value can be computed from existing state → derive it as a `const`, don't store it.
 Only use `useState` for values that can't be derived (user input, server responses, toggle flags).
 
+### useMemo dependency rule
+`useMemo` is a cached calculation. It is not live magic.
+
+React asks:
+
+```txt
+Can I reuse the previous answer, or do I need to calculate a new answer?
+```
+
+The dependency array answers that question:
+
+```txt
+Recalculate when one of these inputs changes.
+```
+
+Rule:
+
+```txt
+Anything from outside the useMemo callback that can change and is used inside
+the calculation belongs in the dependency array.
+```
+
+In this app:
+
+```ts
+const filteredEvents = useMemo(() => {
+  if (filter === "all") return events;
+
+  return events.filter((event) =>
+    userEvents.find(
+      (userEvent) =>
+        userEvent.eventId === event.id &&
+        userEvent.status === filter
+    )
+  );
+}, [filter, events, userEvents]);
+```
+
+The calculation reads three outside values:
+
+- `filter` → which view should be shown?
+- `events` → what events currently exist?
+- `userEvents` → what RSVP statuses currently exist?
+
+So all three are dependencies.
+
+### Why `[filter]` alone is wrong
+If the dependency array is only:
+
+```ts
+[filter]
+```
+
+then React only recalculates when the filter changes.
+
+That means:
+
+1. Filter is currently `"all"`.
+2. Admin creates a new event.
+3. `events` changes.
+4. `filter` does not change.
+5. React may reuse the old cached `filteredEvents`.
+6. The newly created event may not appear immediately.
+
+The bug is not that `filter` is a string. The bug is that `events` was used
+inside the calculation but left out of the dependency array.
+
+### Do not make `filter` an object just to force recalculation
+This is the wrong mental model:
+
+```ts
+const [filter, setFilter] = useState({ value: "all" });
+```
+
+Changing `filter` into an object makes state more complicated, but it does not
+fix the real issue.
+
+The real issue is:
+
+```txt
+filteredEvents depends on events, so events belongs in the dependency array.
+```
+
+Keep the state simple:
+
+```ts
+const [filter, setFilter] = useState("all");
+```
+
+Then list the true inputs:
+
+```ts
+[filter, events, userEvents]
+```
+
+### Local values inside useMemo are not dependencies
+Values created inside the callback do not go in the dependency array:
+
+```ts
+const filteredEvents = useMemo(() => {
+  const isAll = filter === "all";
+
+  if (isAll) return events;
+
+  return events.filter((event) =>
+    userEvents.find((userEvent) => userEvent.eventId === event.id)
+  );
+}, [filter, events, userEvents]);
+```
+
+`isAll` is created inside the callback, so it is not a dependency.
+
+But `filter`, `events`, and `userEvents` come from outside the callback, so they
+are dependencies.
+
+### Good phrase to remember
+```txt
+Deps are not the triggers I prefer.
+Deps are the inputs my calculation depends on.
+```
+
 ---
 
 ## React State
@@ -221,6 +342,170 @@ useCallback with missing deps
 ```
 
 Rule of thumb: use `useCallback` when the function is passed to a memoized child, used as another hook's dependency, or you have seen unnecessary renders. Otherwise, a normal function is usually fine.
+
+---
+
+## Children, Wrapper Props, and cloneElement
+
+### Children are props
+This:
+
+```tsx
+<Box message="hello">
+  <Button />
+</Box>
+```
+
+is basically this:
+
+```tsx
+<Box message="hello" children={<Button />} />
+```
+
+So `Box` receives:
+
+```ts
+{
+  message: "hello",
+  children: <Button />
+}
+```
+
+But `Button` does **not** automatically receive `message`.
+
+```tsx
+function Box({ message, children }) {
+  return <div>{children}</div>;
+}
+
+function Button({ message }) {
+  return <button>{message}</button>;
+}
+```
+
+In this example:
+
+```txt
+Box gets message ✅
+Box gets Button as children ✅
+Button gets message ❌
+```
+
+### Props do not flow through children automatically
+This:
+
+```tsx
+<Box message="hello">
+  <Button />
+</Box>
+```
+
+does not mean:
+
+```txt
+Pass message to Box and Button.
+```
+
+It means:
+
+```txt
+Pass message to Box.
+Pass Button as Box's children.
+```
+
+If `Button` needs `message`, `Box` must explicitly give it.
+
+### When Box creates Button directly
+This is simple:
+
+```tsx
+function Box({ message }) {
+  return <Button message={message} />;
+}
+```
+
+Here `Box` owns the JSX, so it can pass props normally.
+
+### When Button comes through children
+If `Button` is passed into `Box` as `children`, then `Box` did not create it directly:
+
+```tsx
+<Box message="hello">
+  <Button />
+</Box>
+```
+
+So `Box` needs to enhance the child:
+
+```tsx
+function Box({ message, children }) {
+  const childWithMessage = React.cloneElement(children, {
+    message,
+  });
+
+  return <div>{childWithMessage}</div>;
+}
+```
+
+That turns:
+
+```tsx
+<Button />
+```
+
+into:
+
+```tsx
+<Button message="hello" />
+```
+
+### Multiple children
+If there may be more than one child, use `React.Children.map`:
+
+```tsx
+type InjectedProps = {
+  message?: string;
+};
+
+function Box({ message, children }: {
+  message: string;
+  children: React.ReactNode;
+}) {
+  const childrenWithMessage = React.Children.map(children, (child) => {
+    if (!React.isValidElement<InjectedProps>(child)) {
+      return child;
+    }
+
+    return React.cloneElement(child, {
+      message,
+    });
+  });
+
+  return <div>{childrenWithMessage}</div>;
+}
+```
+
+### Mental model
+```txt
+Wrapper owns a value/callback
+Children need that value/callback
+Children do not get wrapper props automatically
+Wrapper must pass or inject the prop
+```
+
+Normal prop passing:
+
+```tsx
+<Button message={message} />
+```
+
+Injecting into children:
+
+```tsx
+React.cloneElement(child, { message })
+```
+
+Use `cloneElement` only when a wrapper receives children from outside and needs to add props to those children.
 
 ---
 
