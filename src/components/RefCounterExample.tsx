@@ -24,7 +24,7 @@ export function RefCounterExample() {
   };
 
   useEffect(() => {
-    searchInputRef2.current?.focus();
+    searchInputRef.current?.focus();
   }, [openSearch]);
 
   return (

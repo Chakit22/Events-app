@@ -10,7 +10,8 @@ import { useUser } from "./hooks/useUser";
 
 function App() {
   const { user } = useUser();
-  const { events, createEvent, editEvent, deleteEvent } = useEvents();
+  const { events, createEvent, editEvent, deleteEvent, isLoading, error } =
+    useEvents();
   const { userEvents, updateRSVP, removeRSVPsForEvent, attendance } =
     useRSVP(events);
   const [isEditingId, setIsEditingId] = useState<string | null>(null);
@@ -90,7 +91,7 @@ function App() {
           </div>
         )}
         {isCreating && <CreateEventForm onCreate={handleCreateEvent} />}
-        {!isEditingId && !isCreating && (
+        {!isLoading && !isEditingId && !isCreating && (
           <div className="flex flex-col justify-center items-center">
             <h1>Events</h1>
             <div className="grid gap-4 grid-cols-3 p-24">
@@ -135,6 +136,8 @@ function App() {
             </div>
           </div>
         )}
+        {isLoading && <div>Fetching events</div>}
+        {error && <div>Error fetching events</div>}
         {isEditingId !== null && (
           <EditEventForm
             event={events.find((event: Event) => event.id === isEditingId)}

@@ -1,59 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { type Event } from "../types/Event";
 
-const initialEvents: Event[] = [
-  {
-    id: crypto.randomUUID(),
-    title: "Tech Innovation Summit",
-    description: "Explore the next decade of AI advancements and robotics.",
-    date: "2026-06-15",
-    location: "Convention Centre, Hall A",
-    time: "09:00",
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "Local Farmers Market",
-    description: "Shop fresh organic produce and handmade crafts.",
-    date: "2026-06-20",
-    location: "Central Park Square",
-    time: "08:00",
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "Live Jazz Night",
-    description: "An evening of smooth classic jazz melodies and drinks.",
-    date: "2026-06-21",
-    location: "The Blue Note Lounge",
-    time: "19:30",
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "Modern Art Exhibition",
-    description: "Abstract pieces from emerging local artists.",
-    date: "2026-07-11",
-    location: "Downtown Gallery 404",
-    time: "11:00",
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "Startup Pitch Night",
-    description: "Early-stage tech startups pitch to angel investors.",
-    date: "2026-07-25",
-    location: "Innovation Hub HQ",
-    time: "18:00",
-  },
-];
-
 export const useEvents = () => {
-  const [events, setEvents] = useState<Event[]>(() => {
-    const savedEvents = localStorage.getItem("events");
-
-    if (!savedEvents) {
-      return initialEvents;
-    }
-
-    return JSON.parse(savedEvents);
-  });
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const createEvent = (data: Omit<Event, "id">) => {
     // MISTAKE I MADE: I mutated the argument and assigned id on it:
@@ -90,13 +41,38 @@ export const useEvents = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("events", JSON.stringify(events));
-  }, [events]);
+    // Fetch events from backend server
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/events");
+
+        if (!response.ok) {
+          throw new Error("HTTP error!");
+        }
+
+        const data = await response.json();
+
+        setEvents(data.body as Event[]);
+        setError(null);
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : "Unknown fetch error";
+
+        console.error("Fetch operation failed : ", message);
+        setError(message);
+      }
+      setIsLoading(false);
+    };
+
+    fetchEvents();
+  }, []);
 
   return {
     events,
     createEvent,
     editEvent,
     deleteEvent,
+    isLoading,
+    error,
   };
 };
