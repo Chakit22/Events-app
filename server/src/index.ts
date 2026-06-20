@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import eventRoutes from "./routes/events.routes.js";
+import type { Request, Response } from "express";
 const app = express();
 const port = 3000;
 
@@ -10,7 +11,7 @@ app.use(bodyParser.json());
 
 app.use("/events", eventRoutes);
 
-app.get("/health", (req: any, res: any) => {
+app.get("/health", (req: Request, res: Response) => {
   res.send("Status: OK");
 });
 
