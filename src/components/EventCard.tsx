@@ -2,6 +2,7 @@ import type { Event } from "../types/Event";
 import { Pencil } from "lucide-react";
 import { Trash } from "lucide-react";
 import { memo } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface EventCardProps {
   currentRole: string;
@@ -28,6 +29,7 @@ export const EventCard = memo(
     cntAttending,
     cntNotAttending,
   }: EventCardProps) => {
+    const navigate = useNavigate();
     return (
       <div className="flex flex-col justify-center items-start gap-4 p-8 border-solid border-4 border-black rounded-lg">
         <div className="w-full flex justify-between items-center">
@@ -76,6 +78,12 @@ export const EventCard = memo(
             <div>Not Attending : {cntNotAttending ? cntNotAttending : 0}</div>
           </div>
         )}
+        <button
+          className="p-2 border-solid border-4 rounded-lg cursor-pointer"
+          onClick={() => navigate(`/events/${event.id}`)}
+        >
+          View Details
+        </button>
       </div>
     );
   },
