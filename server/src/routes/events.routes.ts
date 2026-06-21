@@ -10,6 +10,7 @@ const isValidRSVPStatus = (status: unknown): boolean => {
 };
 
 const upsertRSVP = (req: Request, res: Response) => {
+  console.log("Inside upsertRSVP!");
   const { eventId } = req.params;
   const { status } = req.body;
 

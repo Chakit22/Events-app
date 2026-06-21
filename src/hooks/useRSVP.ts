@@ -3,47 +3,53 @@ import { useUser } from "./useUser";
 import type { Event } from "../types/Event";
 import type { UserEvent } from "../types/UserEvent";
 
+type RSVPStatus = UserEvent["status"];
+
 export const useRSVP = (events: Event[]) => {
-  const [userEvents, setUserEvents] = useState<UserEvent[]>(() => {
-    const savedUserEvents = localStorage.getItem("userEvents");
-
-    if (!savedUserEvents) {
-      return [];
-    }
-
-    return JSON.parse(savedUserEvents);
-  });
+  const [userEvents, setUserEvents] = useState<UserEvent[]>([]);
+  const [isFetchingRSVPs, setIsFetchingRSVPs] = useState(true);
+  const [fetchRSVPsError, setFetchRSVPsError] = useState<string | null>(null);
+  const [updateRSVPError, setUpdateRSVPError] = useState<string | null>(null);
   const { user } = useUser();
+
+  const normalizeRSVPsForCurrentUser = useCallback(
+    (rsvps: UserEvent[]) => {
+      return rsvps.map((rsvp) => ({ ...rsvp, userId: user.id }));
+    },
+    [user.id],
+  );
 
   // Mark the current user's RSVP for an event, updating an existing record when present.
   const updateRSVP = useCallback(
-    (eventId: string, status: "attending" | "not_attending") => {
-      setUserEvents((prev) => {
-        const exists = prev.find(
-          (userEvent) =>
-            userEvent.userId === user.id && userEvent.eventId === eventId,
+    async (eventId: string, status: RSVPStatus) => {
+      console.log("inside updateRSVP");
+      try {
+        const response = await fetch(
+          `http://localhost:3000/events/${eventId}/rsvp`,
+          {
+            method: "PUT",
+            body: JSON.stringify({ status }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
         );
 
-        if (exists) {
-          // MISTAKE I MADE: I called prev.map(...) but discarded its result and
-          // did `return prev` (the unchanged array), so the status never updated.
-          // CONCEPT — map returns a NEW array; you must return/use that result.
-          // This branch enforces "one RSVP per user+event": when a row already
-          // exists we UPDATE it (patch status) instead of pushing a duplicate.
-          return prev.map((userEvent) =>
-            userEvent.userId === user.id && userEvent.eventId === eventId
-              ? { ...userEvent, status: status }
-              : userEvent,
-          );
-        } else {
-          return [
-            ...prev,
-            { userId: user.id, eventId: eventId, status: status },
-          ];
+        if (!response.ok) {
+          throw new Error("HTTP error!");
         }
-      });
+
+        const data = await response.json();
+        setUserEvents(normalizeRSVPsForCurrentUser(data.body));
+        setUpdateRSVPError(null);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+
+        setUpdateRSVPError(message);
+      }
     },
-    [user.id],
+    [normalizeRSVPsForCurrentUser],
   );
 
   // Get all RSVP records for the current user.
@@ -84,8 +90,39 @@ export const useRSVP = (events: Event[]) => {
   }, [userEvents, events]);
 
   useEffect(() => {
-    localStorage.setItem("userEvents", JSON.stringify(userEvents));
-  }, [userEvents]);
+    const fetchRSVPs = async () => {
+      try {
+        setIsFetchingRSVPs(true);
+        const response = await fetch("http://localhost:3000/rsvps");
 
-  return { userEvents, updateRSVP, getRSVP, removeRSVPsForEvent, attendance };
+        if (!response.ok) {
+          throw new Error("HTTP error!");
+        }
+
+        const data = await response.json();
+        setUserEvents(normalizeRSVPsForCurrentUser(data.body));
+        setFetchRSVPsError(null);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+
+        setFetchRSVPsError(message);
+      } finally {
+        setIsFetchingRSVPs(false);
+      }
+    };
+
+    fetchRSVPs();
+  }, [normalizeRSVPsForCurrentUser]);
+
+  return {
+    userEvents,
+    updateRSVP,
+    getRSVP,
+    removeRSVPsForEvent,
+    attendance,
+    isFetchingRSVPs,
+    fetchRSVPsError,
+    updateRSVPError,
+  };
 };

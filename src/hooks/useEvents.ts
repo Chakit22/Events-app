@@ -46,7 +46,7 @@ export const useEvents = () => {
       }
 
       const data = await response.json();
-      setEvents((prev) => [...prev, { ...data, id: data.event.id }]);
+      setEvents((prev) => [...prev, data.event]);
       setCreateEventError(null);
     } catch (error: unknown) {
       const message =
