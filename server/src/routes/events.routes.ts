@@ -5,7 +5,7 @@ import type { UserEvent } from "../types/UserEvent.js";
 
 const router = Router();
 
-const isValidRSVPStatus = (status: unknown): status is UserEvent["status"] => {
+const isValidRSVPStatus = (status: unknown): boolean => {
   return status === "attending" || status === "not_attending";
 };
 
@@ -47,10 +47,7 @@ const upsertRSVP = (req: Request, res: Response) => {
         : rsvp,
     );
   } else {
-    store.rsvps = [
-      ...store.rsvps,
-      { userId: MOCK_USER_ID, eventId, status },
-    ];
+    store.rsvps = [...store.rsvps, { userId: MOCK_USER_ID, eventId, status }];
   }
 
   const rsvp = store.rsvps.find(
@@ -186,9 +183,6 @@ router.patch("/:id", (req: Request, res: Response) => {
   });
 });
 
-router.post("/:eventId/rsvp", upsertRSVP);
-router.put("/:eventId/rsvp", upsertRSVP);
-
 // Delete an existing event
 router.delete("/:id", (req: Request, res: Response) => {
   const { id } = req.params;
@@ -211,5 +205,8 @@ router.delete("/:id", (req: Request, res: Response) => {
     body: store.events,
   });
 });
+
+router.post("/:eventId/rsvp", upsertRSVP);
+router.put("/:eventId/rsvp", upsertRSVP);
 
 export default router;
