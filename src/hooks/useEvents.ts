@@ -3,10 +3,21 @@ import { type Event } from "../types/Event";
 
 export const useEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const createEvent = (data: Omit<Event, "id">) => {
+  const [isFetchingEvents, setIsFetchingEvents] = useState(true);
+  const [fetchEventsError, setFetchEventsError] = useState<string | null>(null);
+
+  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [createEventError, setCreateEventError] = useState<string | null>(null);
+
+  const [isEditingEvent, setIsEditingEvent] = useState(false);
+  const [editEventError, setEditEventError] = useState<string | null>(null);
+  const [isEditingId, setIsEditingId] = useState<string | null>(null);
+
+  const [isDeletingEvent, setIsDeletingEvent] = useState(false);
+  const [deleteEventError, setDeleteEventError] = useState<string | null>(null);
+
+  const createEvent = async (request: Omit<Event, "id">) => {
     // MISTAKE I MADE: I mutated the argument and assigned id on it:
     //   event.id = events.length + 1; setEvents((prev) => [...prev, event]);
     // Two problems:
@@ -17,10 +28,41 @@ export const useEvents = () => {
     // CONCEPT — id source: `events.length + 1` collides after deletes, so I use
     // crypto.randomUUID() for a guaranteed-unique id. Id is created HERE (parent
     // owns the list), not inside the form.
-    setEvents((prev) => [...prev, { ...data, id: crypto.randomUUID() }]);
+
+    // Call the backend API to create the event
+
+    try {
+      console.log("inside createEvent useEvents");
+      const response = await fetch("http://localhost:3000/events", {
+        method: "POST",
+        body: JSON.stringify({ ...request }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("HTTP error!");
+      }
+
+      const data = await response.json();
+      setEvents((prev) => [...prev, { ...data, id: data.event.id }]);
+      setCreateEventError(null);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Unknown fetch error";
+
+      console.error("Creating events failed : ", message);
+      setCreateEventError(message);
+    } finally {
+      setIsCreatingEvent(false);
+    }
   };
 
-  const editEvent = (id: string | undefined, data: Omit<Event, "id">) => {
+  const editEvent = async (
+    id: string | undefined,
+    request: Omit<Event, "id">,
+  ) => {
     // MISTAKE I MADE: I tried to update using filter wrapped in an object:
     //   setEvents((prev) => [{ prev.filter(e => e.id === id), ...data }])
     // That removes items (filter) and reshapes the whole array wrongly.
@@ -29,21 +71,61 @@ export const useEvents = () => {
     //   - map    -> TRANSFORMS each item, same length (use for edit/update)
     // To edit ONE event: map over all, patch the matching id, keep the rest.
     // { ...event, ...data } makes a NEW object (immutability) with data merged in.
-    setEvents((prev) =>
-      prev.map((event) => (event.id === id ? { ...event, ...data } : event)),
-    );
+
+    try {
+      console.log("inside editEvent useEvents");
+      const response = await fetch(`http://localhost:3000/events/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ ...request }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("HTTP error!");
+      }
+
+      const data = await response.json();
+      setEvents(() => [...data.body]);
+      setEditEventError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+
+      setEditEventError(message);
+    } finally {
+      setIsEditingEvent(false);
+      setIsEditingId(null);
+    }
   };
 
-  const deleteEvent = useCallback((id: string) => {
-    setEvents((prevEvents) =>
-      prevEvents.filter((prevEvent) => prevEvent.id !== id),
-    );
+  const deleteEvent = useCallback(async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/events/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("HTTP error!");
+      }
+
+      const data = await response.json();
+      setEvents(() => [...data.body]);
+      setDeleteEventError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+
+      setDeleteEventError(message);
+    } finally {
+      setIsDeletingEvent(false);
+    }
   }, []);
 
   useEffect(() => {
     // Fetch events from backend server
     const fetchEvents = async () => {
       try {
+        setIsFetchingEvents(true);
         const response = await fetch("http://localhost:3000/events");
 
         if (!response.ok) {
@@ -53,15 +135,16 @@ export const useEvents = () => {
         const data = await response.json();
 
         setEvents(data.body as Event[]);
-        setError(null);
+        setFetchEventsError(null);
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : "Unknown fetch error";
 
         console.error("Fetch operation failed : ", message);
-        setError(message);
+        setFetchEventsError(message);
+      } finally {
+        setIsFetchingEvents(false);
       }
-      setIsLoading(false);
     };
 
     fetchEvents();
@@ -72,7 +155,19 @@ export const useEvents = () => {
     createEvent,
     editEvent,
     deleteEvent,
-    isLoading,
-    error,
+    isFetchingEvents,
+    setIsFetchingEvents,
+    fetchEventsError,
+    isCreatingEvent,
+    setIsCreatingEvent,
+    createEventError,
+    isEditingEvent,
+    setIsEditingEvent,
+    editEventError,
+    isDeletingEvent,
+    setIsDeletingEvent,
+    deleteEventError,
+    isEditingId,
+    setIsEditingId,
   };
 };

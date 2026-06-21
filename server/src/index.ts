@@ -1,5 +1,4 @@
 import express from "express";
-import bodyParser from "body-parser";
 import cors from "cors";
 import eventRoutes from "./routes/events.routes.js";
 import type { Request, Response } from "express";
@@ -7,7 +6,7 @@ const app = express();
 const port = 3000;
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use("/events", eventRoutes);
 

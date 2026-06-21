@@ -10,12 +10,28 @@ import { useUser } from "./hooks/useUser";
 
 function App() {
   const { user } = useUser();
-  const { events, createEvent, editEvent, deleteEvent, isLoading, error } =
-    useEvents();
+  const {
+    events,
+    createEvent,
+    editEvent,
+    deleteEvent,
+    isFetchingEvents,
+    isCreatingEvent,
+    isEditingEvent,
+    isDeletingEvent,
+    setIsFetchingEvents,
+    setIsCreatingEvent,
+    setIsEditingEvent,
+    setIsDeletingEvent,
+    fetchEventsError,
+    createEventError,
+    editEventError,
+    deleteEventError,
+    isEditingId,
+    setIsEditingId,
+  } = useEvents();
   const { userEvents, updateRSVP, removeRSVPsForEvent, attendance } =
     useRSVP(events);
-  const [isEditingId, setIsEditingId] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState<boolean>(false);
   const [currentRole, setCurrentRole] = useState<string>("user");
   const roles = ["admin", "user"];
   const [filter, setFilter] = useState("all");
@@ -30,20 +46,23 @@ function App() {
     );
   }, [filter, events, userEvents]);
 
-  const handleCreateEvent = (data: Omit<Event, "id">) => {
-    createEvent(data);
-    setIsCreating(false);
+  const handleCreateEvent = async (data: Omit<Event, "id">) => {
+    console.log("inside handleCreateEvent app.tsx");
+    await createEvent(data);
   };
 
-  const handleEditEvent = (id: string | undefined, data: Omit<Event, "id">) => {
-    editEvent(id, data);
-    setIsEditingId(null);
+  const handleEditEvent = async (
+    id: string | undefined,
+    data: Omit<Event, "id">,
+  ) => {
+    console.log("inside handleEditEvent app.tsx");
+    await editEvent(id, data);
   };
 
   const handleDeleteEvent = useCallback(
-    (id: string) => {
+    async (id: string) => {
       // App coordinates cross-hook cleanup: each hook updates only its own state.
-      deleteEvent(id);
+      await deleteEvent(id);
       removeRSVPsForEvent(id);
     },
     [deleteEvent, removeRSVPsForEvent],
@@ -84,14 +103,14 @@ function App() {
           <div className="flex justify-end items-center">
             <button
               className="p-2 border-solid border-4 rounded-lg cursor-pointer bg-blue-500"
-              onClick={() => setIsCreating(true)}
+              onClick={() => setIsCreatingEvent(true)}
             >
               Create Event +
             </button>
           </div>
         )}
-        {isCreating && <CreateEventForm onCreate={handleCreateEvent} />}
-        {!isLoading && !isEditingId && !isCreating && (
+        {isCreatingEvent && <CreateEventForm onCreate={handleCreateEvent} />}
+        {!isFetchingEvents && !isEditingId && !isCreatingEvent && (
           <div className="flex flex-col justify-center items-center">
             <h1>Events</h1>
             <div className="grid gap-4 grid-cols-3 p-24">
@@ -136,8 +155,8 @@ function App() {
             </div>
           </div>
         )}
-        {isLoading && <div>Fetching events</div>}
-        {error && <div>Error fetching events</div>}
+        {isFetchingEvents && <div>Fetching events</div>}
+        {fetchEventsError && <div>Error fetching events</div>}
         {isEditingId !== null && (
           <EditEventForm
             event={events.find((event: Event) => event.id === isEditingId)}
