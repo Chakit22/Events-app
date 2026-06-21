@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { type Request, type Response } from "express";
 import { MOCK_USER_ID, store } from "../data/store.js";
-import type { UserEvent } from "../types/UserEvent.js";
 
 const router = Router();
 

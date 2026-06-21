@@ -1,5 +1,4 @@
 import { Router, type Request, type Response } from "express";
-
 import { store } from "../data/store.js";
 
 const router = Router();
